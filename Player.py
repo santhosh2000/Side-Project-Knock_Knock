@@ -2,6 +2,7 @@ import random
 import sys
 import os
 import time
+import logging
 scriptpath = "..\Knock_Knock\Card.py"
 sys.path.append(os.path.abspath(scriptpath))
 from Card import *
@@ -16,13 +17,16 @@ NUMBERS = ['1','2','3','4','5','6','7','8','9','10','11','12','13']
 SPECIALSUITS = ['jack','queen','king','ace']
 POWERUPS = [1,7,9,11]
 CARDREALS = NUMBERS + SPECIALSUITS
+logger = logging.getLogger("Player")
 
 class Player:
 
 
 	def __init__(self, game_id, player_id):
 		if(player_id == None or game_id == None):
-			raise AttributeError('Player object should be created with a valid game_id and player_id')			
+			raise AttributeError('Player object should be created with a valid game_id and player_id')
+		# assert(not isinstance(game_id,int),'Player: Game_Id should be an int')
+		# assert(not isinstance(player_id,str),'Player: Player_Id should be a string')
 		self.player_cards = []
 		self.player_id = player_id
 		self.game_id = game_id;
@@ -32,27 +36,39 @@ class Player:
 	def getId(self):
 		return self.player_id
 		
-	def getHand(self):
-		return tostr(self.player_cards)
+	def getLen(self):
+		return len(self.player_cards)
 		
-	def tostr(self):
+
+	
+	def printHand(self):
 		printstr = ""
 		for card in self.player_cards:
-			printstr += "%s\n"% card.__str__()
-		return printstr
+			printstr += "%s "% card.__str__()
+		return printstr	
+		
+
 
 	def __str__(self):
-		return '<Knock-Knock Player Object: player {}>'.format(self.player_id) + ' <in game {}>\n'.format(self.game_id) + self.tostr()
+		return '<Knock-Knock Player Object: player {}>'.format(self.player_id) + ' <in game {}>\n'.format(self.game_id) + self.printHand()
 		
-	def dropCard(self, openCard):
+	def dropCard(self,game):
 		index = 0
-		if openCard is None:
-			return None
+		isFound = False
+		if(game.openCard() is None):
+			raise AttributeError('Card is Empty')
+		
 		for card in self.player_cards:
-			if(card.isMatch(openCard)):
-				print('This is the matched card:' + str(card))
-				return  self.player_cards.pop(index)
+			if(card.isMatch(game.openCard())):
+				logger.debug('This is the matched card:' + str(card) + 'belonging to: ' + self.player_id)
+				game.addOpenCard(card)
+				self.player_cards.pop(index)				
+				isFound = True
+				return isFound
+				
 			index+=1
+		logger.debug('There is no matched card for ' + str(card) + 'with ' + self.player_id)		
+		return isFound
 
 
 
@@ -67,29 +83,34 @@ class Player:
 			self.player_cards.append(card)
 		return True
 		
-	def play(self ,topCard):
-			if self.dropCard(topCard) is None:
-				return -1
-			elif self.dropCard(topCard) and len(self.player_cards) == 1:				
-				return 1
-			elif self.dropCard(topCard) and len(self.player_cards) == 0:
-				self.winnerFlag = True
-				return 2
+	def play(self,game):
+		match = self.dropCard(game)
+		if (not match):
+			self.drawCard(game.deck.pop())
+			return match   	
+		else:
+			# if Knock-Knock: broadcast Knock-Knock
+			if(self.getLen() == 1):
+				game.knockKnock(self.player_id)				
+			# else if no card: win (set Winner at Game Level)
+			elif (self.getLen() == 0):
+				game.setWinner(self.player_id)	
+			# else: no ops
 			else:
-					return -2
-			
+				pass
+			return match
 				
 		
 
 		
-     # power of EQU operator in Python
+	 # power of EQU operator in Python
 	def drawCard1(self, card):
 		if(not card): 
 			return False
 		
 		for c in self.player_cards:
 			if c == card:			
-			    return False
+				return False
 			
 		self.player_cards.append(card)
 		return True			
@@ -98,7 +119,7 @@ class Player:
 		# if(canPlay(self,
 		
 def main():
-	p = Player("1","Santhosh")
+	p = Player(1,"Santhosh")
 	print(p)
 
 	d = Card(2,12)
@@ -118,12 +139,12 @@ def main():
 	p.drawCard(deck.pop())
 	p.drawCard(deck.pop())
 	print(p)
-	h = Card(2,6)
-	print(p.dropCard(h))
-	print(p.dropCard(h))
-	print(p.dropCard(h))
-	i = Card(2,11)
-	print(p.dropCard(i))
+	# h = Card(2,6)
+	# print(p.dropCard(h))
+	# print(p.dropCard(h))
+	# print(p.dropCard(h))
+	# i = Card(2,11)
+	# print(p.dropCard(i))
 
 	#print(_getColor)
 		

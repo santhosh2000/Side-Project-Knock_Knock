@@ -3,6 +3,8 @@ import sys
 import os
 import numbers
 
+
+
 SUITS = [1,2,3,4] # 1-> hearts, 2-> diamonds, 3-> clubs 4-> spades
 NUMBERS = [1,2,3,4,5,6,7,8,9,10,11,12,13]
 SUITSYMBOLS = {1:"\u2665", 2:"\u2666",3:"\u2663",4:"\u2660"}
@@ -10,6 +12,7 @@ SUITSYMBOLS = {1:"\u2665", 2:"\u2666",3:"\u2663",4:"\u2660"}
 SPECIALSUITS = {11: 'J',12: 'Q',13: 'K',1: 'A'}
 POWERUPS = [1,7,9,11]
 #CARDREALS = NUMBERS + SPECIALSUITS.keys()
+
 
 class Card:
 	"""
@@ -97,11 +100,12 @@ class Card:
 		return self.skip
 		
 	def __eq__(self,other):
+		if self is None:
+			return False
 		return (self.suit == other.suit and self.value == other.value)	
 		
 	def isMatch(self,other):
-		if self is None:
-			return False
+	
 		return (self.suit == other.suit or self.value == other.value)
 
 
@@ -112,9 +116,7 @@ class Card:
 	def isPlayable(self,other):
 		  return self.value == other.value or self.color == other.color
 
-		
-		
-	def __str__(self):
+	def cardPrint(self):
 		printstr = ""
 		if self.value in SPECIALSUITS:
 			printstr+="┌───────┐\n"
@@ -132,6 +134,16 @@ class Card:
 			printstr+="|       |\n"
 			printstr+="|    {:>2} |\n".format(self.value)
 			printstr+="└───────┘\n"	
+		print(printstr)
+		
+	def __str__(self):
+		printstr = ""
+		if self.value in SPECIALSUITS:
+			printstr+="|{:<2}".format(SPECIALSUITS[self.value])
+			printstr+="{}| ".format(SUITSYMBOLS[self.suit])
+		else:
+			printstr+="|{:<2}".format(self.value)
+			printstr+="{}| ".format(SUITSYMBOLS[self.suit])
 			
 		# if self.value in SPECIALSUITS:
 		    # return (str(SPECIALSUITS[self.value]) + ' ' + str(self.suit) + ' ')

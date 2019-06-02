@@ -2,16 +2,17 @@ import random
 import sys
 import os
 import time
-scriptpath = "..\Knock_Knock\Card.py"
-sys.path.append(os.path.abspath(scriptpath))
+import logging
+# scriptpath = "..\Knock_Knock\Card.py"
+# sys.path.append(os.path.abspath(scriptpath))
 from Card import *
-scriptpath = "..\Knock_Knock\Deck.py"
-sys.path.append(os.path.abspath(scriptpath))
+# scriptpath = "..\Knock_Knock\Deck.py"
+# sys.path.append(os.path.abspath(scriptpath))
 from Deck import *
-scriptpath = "..\Knock_Knock\Player.py"
-sys.path.append(os.path.abspath(scriptpath))
+# scriptpath = "..\Knock_Knock\Player.py"
+# sys.path.append(os.path.abspath(scriptpath))
 from Player import *
-
+logger = logging.getLogger("Game")
 
 
 class Game():
@@ -26,14 +27,14 @@ class Game():
         self.ID +=1
         self.deck = Deck()
         self.deck.shuffle()
-        self.gameFlag = False
+        self.winner = False # Flag which denotes if the Game was won
         
     def dealHand(self):
         """
         Return a list of 7 cards from the top of the deck, and remove these
         from the deck.
         """
-        for i in range(7):
+        for i in range(2):
             for p in self.playerList:
                 p.addCard(self.deck.pop())
         self.openCards.append(self.deck.pop())
@@ -44,6 +45,9 @@ class Game():
     def sizeOfOpenCards(self):
         return len(self.openCards)
     
+    def gameId(self):
+        return self.gameId
+
     
     def canBegin(self):
         return (self.numPlayers > 1)
@@ -68,29 +72,36 @@ class Game():
     def openCard(self):
         return self.openCards[-1]
         
+        
     def addOpenCard(self,card):
         self.openCards.append(card)
         
+    def setWinner(self, player_id):
+        logger.info('<Knock-Knock Player Object: player {}>'.format(player_id) + ' has won!')
+        self.winner = True    
+        self.endGame()
+        
+        
+    def knockKnock(self, player_id):
+        logger.info('<Knock-Knock Player Object: player {}>'.format(player_id) + 'is going to win!')        
+        for p in self.playerList:
+            if(p.getId() != player_id):
+                logger.debug('<Knock-Knock Player Object: player {}>'.format(player_id) + 'is going to win!')                        
+
+        
     def play(self):
-        while(self.gameFlag != True):
+        while(self.winner != True):
             for p in self.playerList:
-                if (p.play(self.openCard()) == -1):
-                    p.drawCard(self.deck.pop())
-                elif (p.play(self.openCard()) == 1):
-                    card = p.dropCard(self.openCard())
-                    self.addOpenCard(card)
-                    print('<Knock-Knock Player Object: player {}>'.format(p.player_id) + ' <in game {}>\n'.format(p.game_id) + ' is currently in Knock-Knock')    	
-                elif (p.play(self.openCard()) == -2):
-                    card = p.dropCard(self.openCard())
-                    self.addOpenCard(card)
-                else:
-                    card = p.dropCard(self.openCard())
-                    self.addOpenCard(card)
-                    print('<Knock-Knock Player Object: player {}>'.format(p.player_id) + ' <in game {}>\n'.format(p.game_id) + ' has won!')
-                    self.gameFlag = True
-    	
-                  
-        self.endGame()     
+                p.play(self)
+                if self.winner :
+                    break
+                # if(p.play(self) == 2):
+                    # self.setWinner(p)
+                # elif (p.play(self) == 1):
+                    # # for card in g.openCards:
+                        # # print (card.__str__() + "\n")
+                    # print('<Knock-Knock Player Object: player {}>'.format(p.getId()) + ' is in Knock-Knock!')
+
                 
         
     #def play(self):
@@ -98,7 +109,7 @@ class Game():
            #print Error Message and return false
         #while winner hasn't been made , 
             #each player will play in turn: which will result in drawing or dropping card followed by win or just dropping card and telling Knock-Knock or skip                
-				
+                
         #while winner hasn't been made ,
             #continuous looping through the self.playerList[],
             #each Player Object has to choose between playing or dropping card
@@ -115,25 +126,36 @@ class Game():
         
 
 def main():
+    formatter=' %(asctime)s : %(module)s: %(levelname)s: %(message)s'
+    logging.basicConfig(handlers=[logging.FileHandler('Game.log','w','utf-8')], level=logging.DEBUG,format=formatter)
     p = Player("1","Santhosh")
-    print(p)
+    logger.debug(p)
     f = Player("1","Divya")
-    print(f)
+    logger.debug(f)
     g = Game()
     g.addPlayer(p)
     g.addPlayer(f)
     g.dealHand()
+    logger.debug(p)
+    logger.debug(f)
     g.sizeOfDeck()
     g.sizeOfOpenCards()
-    g.openCard()
+    logger.info('This is current open card' + str(g.openCard()))
+    for card in g.openCards:
+        logger.debug (card.__str__() + "\n")
+    response = input(":)")
     g.play()
+    response = input(":)")
+    
+    for card in g.openCards:
+        logger.debug (card.__str__() + "\n")
     
     
     #print(_getColor)
         
 if __name__ == "__main__":
     main()
-    print("Game Testcases completed successfully!")
+    logger.debug("Game Testcases completed successfully!")
 
     
         

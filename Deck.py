@@ -51,13 +51,16 @@ class Deck:
 		return self.numCards
 		
 	def pop(self):
-		if not len(self.cards):
+		if len(self.cards) == 0:
+			#raise AttributeError('Deck object should be created with cards first to pop');
+			self.__create()
 			self.shuffle()
-		elif len(self.cards) == 0:
-			raise AttributeError('Deck object should be created with cards first to pop');
+			self.numCards-=1
+			return self.cards.pop()
 		else:
 			self.numCards-=1
-		return self.cards.pop()
+			return self.cards.pop()
+
 def main():
 	d = Deck()
 	print(d)
